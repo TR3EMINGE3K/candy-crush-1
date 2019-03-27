@@ -28,34 +28,49 @@ struct Math {
   }
 };
 /*STRUCTURE*/
+
+struct Bouton {
+  float x;
+  float y;
+  float width;
+  float height;
+  Color color;
+};
+
 /* 
  * Structure du bonbon il a une couleur et un possible bonus
  */
 struct Bonbon {
     int couleur;
     int bonus;
-}
+};
 
 /* 
  * Structure de l'objectif le score est un booleén et un entier
  */
 struct Objectif {
-    bool isScore
-    int nbrScore
-    int nbrRouge
-    int nbrBleu
-    int nbrOrange
-    int nbrVert
-    int nbrViolet
-}
+    bool isScore;
+    int nbrScore;
+    int nbrRouge;
+    int nbrBleu;
+    int nbrOrange;
+    int nbrVert;
+    int nbrViolet;
+};
 /*FIN STRUCTURE*/
 
 /*VARIABLE*/
-const int WIDTH = HEIGHT = 10;
+const int WIDTH = 10;
+const int HEIGHT = 10;
+const int ECRAN_X = 800;
+const int ECRAN_Y = 600;
+
+bool jouer = false;
 
 int combo = 1;
 int nombreCoup;
 int score;
+
 /*FIN VARIABLE*/
 
 int main() {
@@ -66,17 +81,88 @@ int main() {
    * La documentation se trouve ici:
    * http://www.sfml-dev.org/documentation/2.1/classsf_1_1RenderWindow.php
    */
-  RenderWindow window(VideoMode(800, 600), "Candy Crush");
+  RenderWindow window(VideoMode(ECRAN_X, ECRAN_Y), "Candy Crush");
   
-  /*INITIALISATION DU TABLEAU*/
-  /*FIN INITIALISATION*/
+  Bouton boutonJouer;
+  boutonJouer.x = ECRAN_X*0.25;
+  boutonJouer.y = ECRAN_Y*0.75;
+  boutonJouer.width = ECRAN_X/2;
+  boutonJouer.height = 80;
+  boutonJouer.color = Color::Black;
+  // Create a graphical text to display
+  Font font;
+  if (!font.loadFromFile("arial.ttf"))
+    return EXIT_FAILURE;
+  Text textBouton("JOUER", font, 40);
+  textBouton.setColor(Color::White);
+  textBouton.setPosition(325, 465);
+  
+    // Create a graphical text to display
+  Text textTitre("CANDY CRUSH", font, 65);
+  textTitre.setColor(Color::Black);
+  textTitre.setPosition(200, 150);
+  
+  /*INITIALISATION MENU*/
+  while (!(jouer) && window.isOpen()){
+      
+      Event event;
+
+      while (window.pollEvent(event)) {
+
+      if (event.type == Event::Closed) {
+        window.close();
+      }
+
+      if (event.type == sf::Event::MouseButtonPressed) {
+        if (event.mouseButton.button == sf::Mouse::Left && event.mouseButton.x > boutonJouer.x && event.mouseButton.x < boutonJouer.x + boutonJouer.width & event.mouseButton.y > boutonJouer.y && event.mouseButton.y < boutonJouer.y + boutonJouer.height)
+        {
+            jouer = true;
+        }
+
+      }
+      
+    }
+      
+      window.clear(Color::White);
+      
+      RectangleShape boutonJouerShape;
+      boutonJouerShape.setSize(Vector2f(boutonJouer.width, boutonJouer.height));
+      boutonJouerShape.setPosition(Vector2f(boutonJouer.x, boutonJouer.y));
+      boutonJouerShape.setFillColor(boutonJouer.color);
+      window.draw(boutonJouerShape);
+      
+      window.draw(textBouton);
+      window.draw(textTitre);
+      
+      window.display();
+  }
+  /*FIN INITIALISATION MENU*/
   
   /*
    * Une Clock permet de compter le temps. Vous en aurez besoin pour savoir
    * le temps entre deux frames.
    */
   Clock clock;
-  Move move;
+  
+  /*INITIALISATION DU TABLEAU*/
+  RectangleShape tableauBonbon[WIDTH][HEIGHT];
+  Bonbon bonbon;
+  bonbon.couleur = 4;
+  bonbon.bonus = 1;
+  
+  RectangleShape bonbonShape;
+  bonbonShape.setSize(Vector2f(32, 32));
+  bonbonShape.setPosition(Vector2f(0, 0));
+  bonbonShape.setFillColor(Color::Red);
+  
+  for(int i = 0; i < 10; i++){
+    for(int j = 0; j < 10; j++){
+      bonbonShape.setPosition(Vector2f(j*33,i*33));
+      tableauBonbon[i][j] = bonbonShape;
+    }
+  }
+  
+  /*FIN INITIALISATION TABLEAU*/
   
   /*
    * La boucle de jeu principale. La condition de fin est la fermeture de la
@@ -131,8 +217,14 @@ int main() {
      * dans la variable `dt`. Ensuite, il faut compléter suivant ce qui est
      * demandé.
      */
+    window.clear(Color::White);
 
-
+  for(int i = 0; i < 10; i++){
+    for(int j = 0; j < 10; j++){
+        window.draw(tableauBonbon[i][j]);
+    }
+  }
+    
     /*
      * Affichage de l'état du jeu.
      * À chaque tour de boucle, on efface tout grâce à `clear` (qui prend
