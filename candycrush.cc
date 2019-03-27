@@ -27,20 +27,28 @@ struct Math {
     return dist(engine);
   }
 };
-
-/*
- * La structure Rectangle contient des champs pour manipuler un rectangle
- * avec sa position (x,y) qui correspond au coin en haut à gauche, sa
- * taille width x height, et sa couleur.
- *
- * Le type Color correspond à une structure de SFML:
- * http://www.sfml-dev.org/documentation/2.1/classsf_1_1Color.php
- *
- * Il existe des constantes pour les principales couleurs.
- *
- * Pour pouvoir dessiner des formes, vous pouvez lire le tutoriel suivant:
- * http://www.sfml-dev.org/tutorials/2.1/graphics-shape.php
+/*STRUCTURE*/
+/* 
+ * Structure du bonbon il a une couleur et un possible bonus
  */
+struct Bonbon {
+    int couleur;
+    int bonus;
+}
+
+/* 
+ * Structure de l'objectif le score est un booleén et un entier
+ */
+struct Objectif {
+    bool isScore
+    int nbrScore
+    int nbrRouge
+    int nbrBleu
+    int nbrOrange
+    int nbrVert
+    int nbrViolet
+}
+/*FIN STRUCTURE*/
 
 /*VARIABLE*/
 const int WIDTH = HEIGHT = 10;
@@ -48,6 +56,7 @@ const int WIDTH = HEIGHT = 10;
 int combo = 1;
 int nombreCoup;
 int score;
+/*FIN VARIABLE*/
 
 int main() {
   /*
