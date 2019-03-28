@@ -7,6 +7,7 @@
  * `dt` n'est pas utilisée. C'est normal pour l'instant.
  */
 
+#include <iostream>
 #include <random>
 #include <SFML/Graphics.hpp>
 
@@ -74,13 +75,32 @@ const int BLEU = 4;
 const int VIOLET = 5;
 const int VERT = 6;
 
+Bonbon tableauBonbon[WIDTH][HEIGHT];
+
 bool jouer = false;
+bool isClique = false;
 
 int combo = 1;
 int nombreCoup;
 int score;
+int clique_x = 0;
+int clique_y = 0;
+int clique_x2 = 0;
+int clique_y2 = 0;
 
 /*FIN VARIABLE*/
+
+/*DECLARATION FONCTION*/
+void swap(int pos_x1,int pos_y1,int pos_x2,int pos_y2){
+    if(((pos_y2 == pos_y1 -1)&&(pos_x1==pos_x2))||((pos_y2 == pos_y1 +1)&&(pos_x1==pos_x2))||((pos_x2 == pos_x1 -1)&&(pos_y1==pos_y2))||((pos_x2 == pos_x1 +1)&&(pos_y1==pos_y2))){
+        Bonbon swap = tableauBonbon[pos_y1][pos_x1];
+        tableauBonbon[pos_y1][pos_x1] = tableauBonbon[pos_y2][pos_x2];
+        tableauBonbon[pos_y2][pos_x2] = swap;
+    }
+}
+
+
+/*FIN DECLARATION FONCTION*/
 
 int main() {
   /*
@@ -154,7 +174,6 @@ int main() {
   Clock clock;
   
   /*INITIALISATION DU TABLEAU*/
-  Bonbon tableauBonbon[WIDTH][HEIGHT];
   
   for(int i = 0; i < 10; i++){
       for(int j = 0; j < 10; j++){
@@ -173,33 +192,17 @@ int main() {
    * fenêtre qu'on provoque à l'aide d'un appel `window.close()`.
    */
   while (window.isOpen()) {
-    /*
-     * Un Event est un événement d'entrée. Il contient toutes les informations
-     * nécessaires pour traiter tous les événements.
-     *
-     * Vous pouvez lire ce tutoriel pour comprendre comment récupérer les
-     * informations relatives à chaque événement:
-     * http://www.sfml-dev.org/tutorials/2.1/window-events.php
-     */
+
     Event event;
 
     /*
      * Cette boucle permet de traiter tous les événements en attente.
      */
     while (window.pollEvent(event)) {
-      /*
-       * L'événement Event::Closed est reçu quand on clique sur la croix
-       * dans la barre de la fenêtre. À ce moment là, il faut fermer la
-       * fenêtre explicitement.
-       */
+
       if (event.type == Event::Closed) {
         window.close();
       }
-
-      /*
-       * Les événements dont vous aurez besoin sont Event::KeyPressed,
-       * Event::KeyReleased et Event::MouseButtonPressed.
-       */
 
       if (event.type == Event::KeyPressed) {
           
@@ -210,25 +213,38 @@ int main() {
       }
 
       if (event.type == sf::Event::MouseButtonPressed) {
-          if ()
+          if (event.mouseButton.button == sf::Mouse::Left && event.mouseButton.x >= 355 && event.mouseButton.x < 355 + 530 & event.mouseButton.y > 100 && event.mouseButton.y < 100 + 530){
+              if(isClique){
+                  clique_x2 = (int) event.mouseButton.x;
+                  clique_y2 = (int) event.mouseButton.y;
+                  swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
+                  isClique = false;
+                }
+            else{
+                isClique = true;
+                clique_x = (int) event.mouseButton.x;
+                clique_y = (int) event.mouseButton.y;
+                //std::cout << event.mouseButton.x << ',' << event.mouseButton.y << '\n';
+            }
+          }
+          else{
+             isClique = false;
+          }
       }
       
     }
 
-    /*
-     * Mise à jour de l'état du jeu.
-     * On calcule le temps (en secondes) depuis la dernière frame qu'on place
-     * dans la variable `dt`. Ensuite, il faut compléter suivant ce qui est
-     * demandé.
-     */
     window.clear(Color::White);
-
+    
+    /*DECLARATION BACKGROUND TABLEAU GRAPHIQUE*/
     RectangleShape backgroundTableau;
     backgroundTableau.setSize(Vector2f(545, 545));
     backgroundTableau.setPosition(Vector2f(345,90));
     backgroundTableau.setFillColor(Color::Black);
     window.draw(backgroundTableau);
-  
+    /*FIN DECLARATION BACKGROUND TABLEAU GRAPHIQUE*/
+    
+    /*Creation des bonbons graphiquement*/
     for(int i = 0; i < 10; i++){
         for(int j = 0; j < 10; j++){
             RectangleShape bonbonShape;
@@ -256,13 +272,25 @@ int main() {
             window.draw(bonbonShape);
         }
     }
+    /*Fin Creation des bonbons graphiquement*/
     
-    /*
-     * Affichage de l'état du jeu.
-     * À chaque tour de boucle, on efface tout grâce à `clear` (qui prend
-     * en paramètre la couleur de fond), puis on dessine tous les éléments,
-     * puis on affiche la nouvelle image grâce à `display`.
-     */
+    /*DECLARATION ILLUMINATION BONBON*/
+    RectangleShape illuminationBonbon;
+    if(isClique){
+        illuminationBonbon.setSize(Vector2f(48, 48));
+        illuminationBonbon.setPosition(Vector2f(((clique_x - 355)/53)*53 + 355,((clique_y - 100)/53)*53 + 100));
+        illuminationBonbon.setFillColor(Color(255,255,255,20));
+        illuminationBonbon.setOutlineThickness(2);
+        illuminationBonbon.setOutlineColor(Color::White);
+    }
+    else {
+        illuminationBonbon.setSize(Vector2f(50, 50));
+        illuminationBonbon.setPosition(Vector2f(0,0));
+        illuminationBonbon.setFillColor(Color::White);
+    }
+
+    window.draw(illuminationBonbon);
+    /*FIN DECLARATION ILLUMINATION BONBON*/
     
     window.display();
 
