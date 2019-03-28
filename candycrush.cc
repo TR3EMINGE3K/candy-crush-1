@@ -60,10 +60,19 @@ struct Objectif {
 /*FIN STRUCTURE*/
 
 /*VARIABLE*/
+const int ECRAN_X = 1200;
+const int ECRAN_Y = 700;
+
 const int WIDTH = 10;
 const int HEIGHT = 10;
-const int ECRAN_X = 800;
-const int ECRAN_Y = 600;
+
+const int MUR = 0;
+const int TROU = 1;
+const int ORANGE = 2;
+const int ROUGE = 3;
+const int BLEU = 4;
+const int VIOLET = 5;
+const int VERT = 6;
 
 bool jouer = false;
 
@@ -145,22 +154,17 @@ int main() {
   Clock clock;
   
   /*INITIALISATION DU TABLEAU*/
-  RectangleShape tableauBonbon[WIDTH][HEIGHT];
-  Bonbon bonbon;
-  bonbon.couleur = 4;
-  bonbon.bonus = 1;
-  
-  RectangleShape bonbonShape;
-  bonbonShape.setSize(Vector2f(32, 32));
-  bonbonShape.setPosition(Vector2f(0, 0));
-  bonbonShape.setFillColor(Color::Red);
+  Bonbon tableauBonbon[WIDTH][HEIGHT];
   
   for(int i = 0; i < 10; i++){
-    for(int j = 0; j < 10; j++){
-      bonbonShape.setPosition(Vector2f(j*33,i*33));
-      tableauBonbon[i][j] = bonbonShape;
+      for(int j = 0; j < 10; j++){
+          Bonbon bonbon;
+          bonbon.couleur = 2 + (int)(Math::random() * ((6 - 2) + 1)); 
+          bonbon.bonus = 1;
+          tableauBonbon[i][j] = bonbon; 
     }
   }
+
   
   /*FIN INITIALISATION TABLEAU*/
   
@@ -206,7 +210,7 @@ int main() {
       }
 
       if (event.type == sf::Event::MouseButtonPressed) {
-
+          if ()
       }
       
     }
@@ -219,11 +223,39 @@ int main() {
      */
     window.clear(Color::White);
 
-  for(int i = 0; i < 10; i++){
-    for(int j = 0; j < 10; j++){
-        window.draw(tableauBonbon[i][j]);
+    RectangleShape backgroundTableau;
+    backgroundTableau.setSize(Vector2f(545, 545));
+    backgroundTableau.setPosition(Vector2f(345,90));
+    backgroundTableau.setFillColor(Color::Black);
+    window.draw(backgroundTableau);
+  
+    for(int i = 0; i < 10; i++){
+        for(int j = 0; j < 10; j++){
+            RectangleShape bonbonShape;
+            bonbonShape.setSize(Vector2f(48, 48));
+            bonbonShape.setPosition(Vector2f(j*53 + 355,i*53 + 100));
+            switch (tableauBonbon[i][j].couleur)
+            {
+                case ORANGE:
+                    bonbonShape.setFillColor(Color(237,127,16));
+                    break;
+                case ROUGE:
+                    bonbonShape.setFillColor(Color::Red);
+                    break;
+                case BLEU:
+                    bonbonShape.setFillColor(Color::Blue);
+                    break;
+                case VIOLET:
+                    bonbonShape.setFillColor(Color(108,2,119));
+                    break;
+                case VERT:
+                    bonbonShape.setFillColor(Color(84,249,141));
+                    break;                    
+            }
+            
+            window.draw(bonbonShape);
+        }
     }
-  }
     
     /*
      * Affichage de l'état du jeu.
