@@ -1,0 +1,12 @@
+bool match (int pos_x1,int pos_y1,int pos_x2,int pos_y2){
+    bool matchpossible = false;
+    if ((pos_y1 +1 == pos_y2)&&(pos_x1 == pos_x2)){ 
+        if (tableauBonbon[pos_x1][pos_y1].couleur == tableauBonbon[pos_x2+1][pos_y2].couleur){
+            matchpossible = true;
+        }
+        else{
+            matchpossible = false;
+        }
+    }
+    return matchpossible;
+}
