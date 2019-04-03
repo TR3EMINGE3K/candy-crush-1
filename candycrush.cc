@@ -69,11 +69,12 @@ const int HEIGHT = 10;
 
 const int MUR = 0;
 const int TROU = 1;
-const int ORANGE = 2;
-const int ROUGE = 3;
-const int BLEU = 4;
-const int VIOLET = 5;
-const int VERT = 6;
+const int VIDE = 2;
+const int ORANGE = 3;
+const int ROUGE = 4;
+const int BLEU = 5;
+const int VIOLET = 6;
+const int VERT = 7;
 
 Bonbon tableauBonbon[WIDTH][HEIGHT];
 
@@ -91,11 +92,109 @@ int clique_y2 = 0;
 /*FIN VARIABLE*/
 
 /*DECLARATION FONCTION*/
+
+void destruction(int direction,int pos_x2,int pos_y2,int couleur){
+    int count = 0;
+    switch(direction)
+    {
+        /*Gauche*/
+        case 1:
+            do{
+                tableauBonbon[pos_y2][pos_x2 - count].couleur = VIDE;
+                count++;
+            }while(pos_x2 >= 0 && tableauBonbon[pos_y2][pos_x2 - count].couleur == couleur);
+            break;
+        /*Haut*/
+        case 2:
+            do{
+                tableauBonbon[pos_y2 - count][pos_x2].couleur = VIDE;
+                count++;
+            }while(pos_y2 < HEIGHT && tableauBonbon[pos_y2 - count][pos_x2].couleur == couleur);
+            break;
+        /*Bas*/
+        case 3:
+            do{
+                tableauBonbon[pos_y2 + count][pos_x2].couleur = VIDE;
+                count++;
+            }while(pos_y2 >= 0 && tableauBonbon[pos_y2 + count][pos_x2].couleur == couleur);
+            break;
+        /*Droite*/
+        case 4:
+            do{
+                tableauBonbon[pos_y2][pos_x2 + count].couleur = VIDE;
+                count++;
+            }while(pos_x2 < WIDTH && tableauBonbon[pos_y2][pos_x2 + count].couleur == couleur);
+            break;
+        /*Milieu Horizontale*/    
+        case 5:
+            /*GAUCHE*/
+            do{
+                tableauBonbon[pos_y2][pos_x2 - count].couleur = VIDE;
+                count++;
+            }while(pos_x2 >= 0 && tableauBonbon[pos_y2][pos_x2 - count].couleur == couleur);
+            count = 0;
+            /*DROITE*/
+            do{
+                tableauBonbon[pos_y2][pos_x2 + count].couleur = VIDE;
+                count++;
+            }while(pos_x2 < WIDTH && tableauBonbon[pos_y2][pos_x2 + count].couleur == couleur);
+            break;
+        /*Milieu Verticale*/    
+        case 6:
+            /*BAS*/
+            do{
+                tableauBonbon[pos_y2 - count][pos_x2].couleur = VIDE;
+                count++;
+            }while(pos_y2 < HEIGHT && tableauBonbon[pos_y2 - count][pos_x2].couleur == couleur);
+            count = 0;
+            /*HAUT*/
+            do{
+                tableauBonbon[pos_y2 + count][pos_x2].couleur = VIDE;
+                count++;
+            }while(pos_y2 >= 0 && tableauBonbon[pos_y2 + count][pos_x2].couleur == couleur);
+            break;
+         
+    }
+}
+
 void swap(int pos_x1,int pos_y1,int pos_x2,int pos_y2){
-    if(((pos_y2 == pos_y1 -1)&&(pos_x1==pos_x2))||((pos_y2 == pos_y1 +1)&&(pos_x1==pos_x2))||((pos_x2 == pos_x1 -1)&&(pos_y1==pos_y2))||((pos_x2 == pos_x1 +1)&&(pos_y1==pos_y2))){
-        Bonbon swap = tableauBonbon[pos_y1][pos_x1];
-        tableauBonbon[pos_y1][pos_x1] = tableauBonbon[pos_y2][pos_x2];
-        tableauBonbon[pos_y2][pos_x2] = swap;
+    Bonbon swap = tableauBonbon[pos_y1][pos_x1];
+    tableauBonbon[pos_y1][pos_x1] = tableauBonbon[pos_y2][pos_x2];
+    tableauBonbon[pos_y2][pos_x2] = swap;
+}
+
+void match(int pos_x1,int pos_y1,int pos_x2,int pos_y2){
+    if(((pos_y2 == pos_y1 - 1)&&(pos_x1==pos_x2)) || ((pos_y2 == pos_y1 +1)&&(pos_x1==pos_x2)) || ((pos_x2 == pos_x1 -1)&&(pos_y1==pos_y2)) || ((pos_x2 == pos_x1 +1)&&(pos_y1==pos_y2))){
+        /*Milieu Horizontale*/
+        if(pos_x2 - 1 >= 0 && pos_x2 < WIDTH && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 - 1].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 + 1].couleur){
+            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
+            destruction(5,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
+        }
+        /*Milieu Verticale*/
+        else if(pos_y2 - 1 >= 0 && pos_y2 < HEIGHT && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 - 1][pos_x2].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 + 1][pos_x2].couleur){
+            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
+            destruction(6,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
+        }
+        /*Gauche*/
+        else if(pos_x2 - 1 >= 0 && pos_x2 - 2 >= 0 && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 - 1].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 - 2].couleur){
+            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
+            destruction(1,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
+        }
+        /*Bas*/
+        else if(pos_y2 - 1 >= 0 && pos_y2 - 2 >= 0 && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 - 1][pos_x2].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 - 2][pos_x2].couleur){
+            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
+            destruction(2,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
+        }
+        /*Haut*/
+        else if(pos_y2 + 1 < HEIGHT && pos_y2 + 2 < HEIGHT && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 + 1][pos_x2].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 + 2][pos_x2].couleur){
+            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
+            destruction(3,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
+        }
+        /*Droite*/
+        else if(pos_x2 + 1 < WIDTH && pos_y2 + 2 < WIDTH && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 + 1].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 + 2].couleur){
+            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
+            destruction(4,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
+        }
     }
 }
 
@@ -178,7 +277,7 @@ int main() {
   for(int i = 0; i < 10; i++){
       for(int j = 0; j < 10; j++){
           Bonbon bonbon;
-          bonbon.couleur = 2 + (int)(Math::random() * ((6 - 2) + 1)); 
+          bonbon.couleur = ORANGE + (int)(Math::random() * ((VERT - ORANGE) + 1)); 
           bonbon.bonus = 1;
           tableauBonbon[i][j] = bonbon; 
     }
@@ -217,7 +316,7 @@ int main() {
               if(isClique){
                   clique_x2 = (int) event.mouseButton.x;
                   clique_y2 = (int) event.mouseButton.y;
-                  swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
+                  match((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
                   isClique = false;
                 }
             else{
