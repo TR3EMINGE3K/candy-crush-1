@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <random>
 #include <SFML/Graphics.hpp>
 
@@ -58,6 +59,13 @@ const int ECRAN_Y = 700;
 const int WIDTH = 10;
 const int HEIGHT = 10;
 
+//Centrage des bonbons graphiquement
+const int OFFSET_X = 355, OFFSET_Y = 100;
+
+const int TAILLE_PLATEAU = 530;
+const int TAILLE_BONBON = 48;
+const int TAILLE_BONBON_OFFSET = TAILLE_BONBON + 5;
+
 //Valeur possible d'un bonbon
 const int MUR = 0;
 const int TROU = 1;
@@ -78,21 +86,20 @@ int nombreCoup = 0;
 int score = 0;
 
 //Position du bonbon 1 en taille réel
-int clique_x = 0;
-int clique_y = 0;
+int clique_x = 0, clique_y = 0;
 //Position du bonbon 2 en taille réel
-int clique_x2 = 0;
-int clique_y2 = 0;
+int clique_x2 = 0, clique_y2 = 0;
 
 /*FIN VARIABLE*/
 
 /*DECLARATION FONCTION*/
 
-bool verificationClique(Event event, int x, int y, float width, float height){
+//Fonctions Mineurs
+bool verificationClique(Event event, int x, int y, float width, float height) {
   return event.mouseButton.x > x && event.mouseButton.x < x + width & event.mouseButton.y > y && event.mouseButton.y < y + height;
 }
 
-RectangleShape illuminationBonbon(){
+RectangleShape illuminationBonbon() {
   RectangleShape illuminationBonbon;
   if(isClique) {
     illuminationBonbon.setSize(Vector2f(48, 48));
@@ -109,114 +116,180 @@ RectangleShape illuminationBonbon(){
   return illuminationBonbon;
 }
 
-void destruction(int direction,int pos_x2,int pos_y2,int couleur) {
+int posReel2posTableau(int cord, char pos) {
+  if(pos == 'x')
+    return (cord - OFFSET_X)/TAILLE_BONBON_OFFSET;
+  else
+    return (cord - OFFSET_Y)/TAILLE_BONBON_OFFSET;
+}
+
+bool isNearToBonbon(int pos_x1, int pos_y1, int pos_x2, int pos_y2) {
+  //Gauche - Droite - Haut - Bas
+  return ((pos_x1==pos_x2+1)&&(pos_y1==pos_y2))||((pos_x1==pos_x2-1)&&(pos_y1==pos_y2))||((pos_x1==pos_x2)&&(pos_y1==pos_y2+1))||((pos_x1==pos_x2)&&(pos_y1==pos_y2-1));
+}
+
+bool isMatchPossible(int pos_x1, int pos_y1, int pos_x2, int pos_y2, int couleur, char direction) {
+  bool result = false;
+  switch (direction)
+  {
+    /*GAUCHE*/
+    case 'g':
+      result = (pos_x2 - 2 >= 0) && (pos_x2 - 1 != pos_x1) && (tableauBonbon[pos_y2][pos_x2 - 1].couleur == couleur) && (tableauBonbon[pos_y2][pos_x2 - 2].couleur == couleur);
+    break;
+    /*DROITE*/
+    case 'd':
+      result = (pos_x2 + 2 < WIDTH) && (pos_x2 + 1 != pos_x1) && (tableauBonbon[pos_y2][pos_x2 + 1].couleur == couleur) && (tableauBonbon[pos_y2][pos_x2 + 2].couleur == couleur);
+    break;
+    /*HAUT*/
+    case 'h':
+      result = (pos_y2 - 2 >= 0) && (pos_y2 - 1 != pos_y1) && (tableauBonbon[pos_y2 - 1][pos_x2].couleur == couleur) && (tableauBonbon[pos_y2 - 2][pos_x2].couleur == couleur);
+    break;
+    /*BAS*/
+    case 'b':
+      result = (pos_y2 + 2 < HEIGHT) && (pos_y2 + 1 != pos_y1) && (tableauBonbon[pos_y2 + 1][pos_x2].couleur == couleur) && (tableauBonbon[pos_y2 + 2][pos_x2].couleur == couleur);
+    break;
+    /*ORIZONTALE*/
+    case 'o':
+      result = (pos_x2 - 1 >= 0) && (pos_x2 + 1 < WIDTH) && (pos_x2 - 1 != pos_x1) && (pos_x2 + 1 != pos_x1) && (tableauBonbon[pos_y2][pos_x2 - 1].couleur == couleur) && (tableauBonbon[pos_y2][pos_x2 + 1].couleur == couleur);
+    break;
+    /*VERTICALE*/
+    case 'v':
+      result = (pos_y2 - 1 >= 0) && (pos_y2 + 1 < HEIGHT) && (pos_y2 - 1 != pos_y1) && (pos_y2 + 1 != pos_y1) && (tableauBonbon[pos_y2 - 1][pos_x2].couleur == couleur) && (tableauBonbon[pos_y2 + 1][pos_x2].couleur == couleur);
+    break;
+  }
+  std::cout << "isMatchPossible : " << result << '\n';
+  return result;
+}
+
+//Fonctions Majeures
+void destruction(int pos_x2, int pos_y2, int couleur, char direction) {
   int count = 0;
+  bool finish = false;
   switch(direction) {
 
-    /*Gauche*/
-    case 1:
+    /*GAUCHE*/
+    case 'g':
       do{
-        tableauBonbon[pos_y2][pos_x2 - count].couleur = VIDE;
+        if(tableauBonbon[pos_y2][pos_x2 - count].couleur == couleur)
+          tableauBonbon[pos_y2][pos_x2 - count].couleur = VIDE;
+        else
+          finish = true;
         count++;
-      }while(pos_x2 >= 0 && tableauBonbon[pos_y2][pos_x2 - count].couleur == couleur);
+      }while(pos_x2 >= 0 && !finish);
+
+    /*DROITE*/
+    case 'd':
+      do{
+        if(tableauBonbon[pos_y2][pos_x2 + count].couleur == couleur)
+          tableauBonbon[pos_y2][pos_x2 + count].couleur = VIDE;
+        else
+          finish = true;
+        count++;
+      }while(pos_x2 < WIDTH && !finish);
     break;
 
-    /*Haut*/
-    case 2:
+    /*HAUT*/
+    case 'h':
       do{
-        tableauBonbon[pos_y2 - count][pos_x2].couleur = VIDE;
+        if(tableauBonbon[pos_y2 - count][pos_x2].couleur == couleur)
+          tableauBonbon[pos_y2 - count][pos_x2].couleur = VIDE;
+        else
+          finish = true;
         count++;
-      }while(pos_y2 < HEIGHT && tableauBonbon[pos_y2 - count][pos_x2].couleur == couleur);
+      }while(pos_y2 >= 0 && !finish);
     break;
 
-    /*Bas*/
-    case 3:
+    /*BAS*/
+    case 'b':
       do{
-        tableauBonbon[pos_y2 + count][pos_x2].couleur = VIDE;
+        if(tableauBonbon[pos_y2 + count][pos_x2].couleur == couleur)
+          tableauBonbon[pos_y2 + count][pos_x2].couleur = VIDE;
+        else 
+          finish = true;
         count++;
-      }while(pos_y2 >= 0 && tableauBonbon[pos_y2 + count][pos_x2].couleur == couleur);
+      }while(pos_y2 < HEIGHT && !finish);
     break;
 
-    /*Droite*/
-    case 4:
-      do{
-        tableauBonbon[pos_y2][pos_x2 + count].couleur = VIDE;
-        count++;
-      }while(pos_x2 < WIDTH && tableauBonbon[pos_y2][pos_x2 + count].couleur == couleur);
-    break;
-
-    /*Milieu Horizontale*/    
-    case 5:
+    /*ORIZONTALE*/    
+    case 'o':
       /*GAUCHE*/
       do{
-        tableauBonbon[pos_y2][pos_x2 - count].couleur = VIDE;
+        if(tableauBonbon[pos_y2][pos_x2 - count].couleur == couleur)
+          tableauBonbon[pos_y2][pos_x2 - count].couleur = VIDE;
+        else
+          finish = true;
         count++;
-      }while(pos_x2 >= 0 && tableauBonbon[pos_y2][pos_x2 - count].couleur == couleur);
-      count = 0;
+      }while(pos_x2 >= 0 && !finish);
+      finish = false;
+      count = 1;
       /*DROITE*/
       do{
-        tableauBonbon[pos_y2][pos_x2 + count].couleur = VIDE;
+        if(tableauBonbon[pos_y2][pos_x2 + count].couleur == couleur)
+          tableauBonbon[pos_y2][pos_x2 + count].couleur = VIDE;
+        else
+          finish = true;
         count++;
-      }while(pos_x2 < WIDTH && tableauBonbon[pos_y2][pos_x2 + count].couleur == couleur);
+      }while(pos_x2 < WIDTH && !finish);
     break;
 
-    /*Milieu Verticale*/    
-    case 6:
+    /*VERTICALE*/    
+    case 'v':
+      /*HAUT*/
+      do{
+        if(tableauBonbon[pos_y2 - count][pos_x2].couleur == couleur)
+          tableauBonbon[pos_y2 - count][pos_x2].couleur = VIDE;
+        else
+          finish = true;
+        count++;
+      }while(pos_y2 >= 0 && !finish);
+      finish = false;
+      count = 1;
       /*BAS*/
       do{
-        tableauBonbon[pos_y2 - count][pos_x2].couleur = VIDE;
+        if(tableauBonbon[pos_y2 + count][pos_x2].couleur == couleur)
+          tableauBonbon[pos_y2 + count][pos_x2].couleur = VIDE;
+        else 
+          finish = true;
         count++;
-      }while(pos_y2 < HEIGHT && tableauBonbon[pos_y2 - count][pos_x2].couleur == couleur);
-      count = 0;
-        /*HAUT*/
-      do{
-        tableauBonbon[pos_y2 + count][pos_x2].couleur = VIDE;
-        count++;
-      }while(pos_y2 >= 0 && tableauBonbon[pos_y2 + count][pos_x2].couleur == couleur);
+      }while(pos_y2 < HEIGHT && !finish);
     break;
         
   }
 }
 
-void swap(int pos_x1,int pos_y1,int pos_x2,int pos_y2){
+void swap(int pos_x1, int pos_y1, int pos_x2, int pos_y2) {
   Bonbon swap = tableauBonbon[pos_y1][pos_x1];
   tableauBonbon[pos_y1][pos_x1] = tableauBonbon[pos_y2][pos_x2];
   tableauBonbon[pos_y2][pos_x2] = swap;
 }
 
-void match(int pos_x1,int pos_y1,int pos_x2,int pos_y2){
-    if(((pos_y2 == pos_y1 - 1)&&(pos_x1==pos_x2)) || ((pos_y2 == pos_y1 +1)&&(pos_x1==pos_x2)) || ((pos_x2 == pos_x1 -1)&&(pos_y1==pos_y2)) || ((pos_x2 == pos_x1 +1)&&(pos_y1==pos_y2))){
-        /*Milieu Horizontale*/
-        if(pos_x2 - 1 >= 0 && pos_x2 < WIDTH && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 - 1].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 + 1].couleur){
-            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
-            destruction(5,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
-        }
-        /*Milieu Verticale*/
-        else if(pos_y2 - 1 >= 0 && pos_y2 < HEIGHT && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 - 1][pos_x2].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 + 1][pos_x2].couleur){
-            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
-            destruction(6,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
-        }
-        /*Gauche*/
-        else if(pos_x2 - 1 >= 0 && pos_x2 - 2 >= 0 && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 - 1].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 - 2].couleur){
-            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
-            destruction(1,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
-        }
-        /*Bas*/
-        else if(pos_y2 - 1 >= 0 && pos_y2 - 2 >= 0 && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 - 1][pos_x2].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 - 2][pos_x2].couleur){
-            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
-            destruction(2,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
-        }
-        /*Haut*/
-        else if(pos_y2 + 1 < HEIGHT && pos_y2 + 2 < HEIGHT && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 + 1][pos_x2].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2 + 2][pos_x2].couleur){
-            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
-            destruction(3,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
-        }
-        /*Droite*/
-        else if(pos_x2 + 1 < WIDTH && pos_y2 + 2 < WIDTH && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 + 1].couleur && tableauBonbon[pos_y1][pos_x1].couleur == tableauBonbon[pos_y2][pos_x2 + 2].couleur){
-            swap((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
-            destruction(4,pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur);
-        }
+void match(int pos_x1, int pos_y1, int pos_x2, int pos_y2) {
+  if (isNearToBonbon(pos_x1,pos_y1,pos_x2,pos_y2)) {
+    if (isMatchPossible(pos_x1,pos_y1,pos_x2,pos_y2,tableauBonbon[pos_y1][pos_x1].couleur,'o')) {
+      swap(pos_x1,pos_y1,pos_x2,pos_y2);
+      destruction(pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur,'o');
     }
+    else if (isMatchPossible(pos_x1,pos_y1,pos_x2,pos_y2,tableauBonbon[pos_y1][pos_x1].couleur,'v')) {
+      swap(pos_x1,pos_y1,pos_x2,pos_y2);
+      destruction(pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur,'v');
+    }  
+    else if (isMatchPossible(pos_x1,pos_y1,pos_x2,pos_y2,tableauBonbon[pos_y1][pos_x1].couleur,'g')) {
+      swap(pos_x1,pos_y1,pos_x2,pos_y2);
+      destruction(pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur,'g');
+    }
+    else if (isMatchPossible(pos_x1,pos_y1,pos_x2,pos_y2,tableauBonbon[pos_y1][pos_x1].couleur,'d')) {
+      swap(pos_x1,pos_y1,pos_x2,pos_y2);
+      destruction(pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur,'d');
+    }
+    else if (isMatchPossible(pos_x1,pos_y1,pos_x2,pos_y2,tableauBonbon[pos_y1][pos_x1].couleur,'h')) {
+      swap(pos_x1,pos_y1,pos_x2,pos_y2);
+      destruction(pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur,'h');
+    }
+    else if (isMatchPossible(pos_x1,pos_y1,pos_x2,pos_y2,tableauBonbon[pos_y1][pos_x1].couleur,'b')) {
+      swap(pos_x1,pos_y1,pos_x2,pos_y2);
+      destruction(pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur,'b');
+    }  
+  }
 }
 
 /*FIN DECLARATION FONCTION*/
@@ -318,12 +391,13 @@ int main() {
 
       if (event.type == sf::Event::MouseButtonPressed) {
 
-        if (event.mouseButton.button == sf::Mouse::Left && event.mouseButton.x >= 355 && event.mouseButton.x < 355 + 530 & event.mouseButton.y > 100 && event.mouseButton.y < 100 + 530){
+        if (event.mouseButton.button == sf::Mouse::Left && verificationClique(event, OFFSET_X, OFFSET_Y, TAILLE_PLATEAU, TAILLE_PLATEAU)) {
 
           if(isClique) {
             clique_x2 = (int) event.mouseButton.x;
             clique_y2 = (int) event.mouseButton.y;
-            match((clique_x - 355)/53,(clique_y - 100)/53,(clique_x2 - 355)/53,(clique_y2 - 100)/53);
+            std::cout << "x2: " << posReel2posTableau(clique_x2,'x') << ", y2: " << posReel2posTableau(clique_y2,'y') << '\n';
+            match(posReel2posTableau(clique_x,'x'),posReel2posTableau(clique_y,'y'),posReel2posTableau(clique_x2,'x'),posReel2posTableau(clique_y2,'y'));
             isClique = false;
           }
 
@@ -331,7 +405,7 @@ int main() {
             isClique = true;
             clique_x = (int) event.mouseButton.x;
             clique_y = (int) event.mouseButton.y;
-            //std::cout << event.mouseButton.x << ',' << event.mouseButton.y << '\n';
+            std::cout << "x1: " << posReel2posTableau(clique_x,'x') << ", y1: " << posReel2posTableau(clique_y,'y') << '\n';
           }
         }
 
@@ -342,11 +416,16 @@ int main() {
     }
 
     window.clear(Color::White);
-    
+    /*
+      530 = position max de bonbon en x et y
+      53 = position des bonbons afin de créer un effet de bord
+      offset_x et offset_y = déplacement du tableau de bonbon par deux vecteur x et y
+    */
+
     /*DECLARATION BACKGROUND TABLEAU GRAPHIQUE*/
     RectangleShape backgroundTableau;
-    backgroundTableau.setSize(Vector2f(545, 545));
-    backgroundTableau.setPosition(Vector2f(345,90));
+    backgroundTableau.setSize(Vector2f(TAILLE_PLATEAU + 15, TAILLE_PLATEAU + 15));
+    backgroundTableau.setPosition(Vector2f(OFFSET_X - 10, OFFSET_Y - 10));
     backgroundTableau.setFillColor(Color::Black);
     window.draw(backgroundTableau);
     /*FIN DECLARATION BACKGROUND TABLEAU GRAPHIQUE*/
@@ -355,8 +434,8 @@ int main() {
     for(int i = 0; i < 10; i++){
       for(int j = 0; j < 10; j++){
         RectangleShape bonbonShape;
-        bonbonShape.setSize(Vector2f(48, 48));
-        bonbonShape.setPosition(Vector2f(j*53 + 355,i*53 + 100));
+        bonbonShape.setSize(Vector2f(TAILLE_BONBON, TAILLE_BONBON));
+        bonbonShape.setPosition(Vector2f(j*TAILLE_BONBON_OFFSET + OFFSET_X, i*TAILLE_BONBON_OFFSET + OFFSET_Y));
         switch (tableauBonbon[i][j].couleur) {
           case ORANGE:
             bonbonShape.setFillColor(Color(237,127,16));
