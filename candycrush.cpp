@@ -1,5 +1,5 @@
 #include <iostream>
-#include <string>
+#include <list>
 #include <random>
 #include <SFML/Graphics.hpp>
 
@@ -50,6 +50,16 @@ struct Objectif {
   int nbrVert;
   int nbrViolet;
 };
+
+/*
+ *
+ */
+struct Tuple
+{
+  int x;
+  int y;
+};
+
 /*FIN STRUCTURE*/
 
 /*VARIABLE*/
@@ -313,6 +323,35 @@ void match(int pos_x1, int pos_y1, int pos_x2, int pos_y2) {
       destruction(pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur,'b');
     }
     remplacementVide();
+  }
+}
+
+void verificationTableau() {
+  
+  for(int i = 0; i < HEIGHT; i++) {
+    for(int j = 0; j < WIDTH; j++) {
+      int count = 1;
+      std::list <Tuple> coordinate;
+      Tuple cord;
+      cord.x = j;
+      cord.y = i;
+      coordinate.push_front(cord);
+      int couleur = tableauBonbon[i][j].couleur;
+      do {
+        if(tableauBonbon[i][j + count].couleur == couleur) {
+          cord.x = j;
+          cord.y = i;
+          coordinate.push_front(cord);
+          count++;
+        }
+      }while(j + count < WIDTH);
+      if (count >= 3) {
+        do {
+          tableauBonbon[coordinate.front().y][coordinate.front().x].couleur == VIDE;
+          coordinate.pop_front();
+        }while(coordinate.size() != 0);
+      }
+    }
   }
 }
 
