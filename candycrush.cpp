@@ -157,7 +157,7 @@ bool isMatchPossible(int pos_x1, int pos_y1, int pos_x2, int pos_y2, int couleur
       result = (pos_y2 - 1 >= 0) && (pos_y2 + 1 < HEIGHT) && (pos_y2 - 1 != pos_y1) && (pos_y2 + 1 != pos_y1) && (tableauBonbon[pos_y2 - 1][pos_x2].couleur == couleur) && (tableauBonbon[pos_y2 + 1][pos_x2].couleur == couleur);
     break;
   }
-  std::cout << "isMatchPossible : " << result << '\n';
+  //std::cout << "isMatchPossible : " << result << '\n';
   return result;
 }
 
@@ -263,6 +263,29 @@ void swap(int pos_x1, int pos_y1, int pos_x2, int pos_y2) {
   tableauBonbon[pos_y2][pos_x2] = swap;
 }
 
+void remplacementVide() {
+  for(int i = 0;i < HEIGHT;i++) {
+    for(int j = 0;j < WIDTH;j++) {
+      if (tableauBonbon[i][j].couleur == VIDE) {
+        int count_1 = 1, count_2 = 0;
+        do {
+          if(i - count_1 >= 0) {
+            swap(j,i - count_2,j,i - count_1);
+          }
+          else {
+            Bonbon bonbon;
+            bonbon.couleur = ORANGE + (int)(Math::random() * ((VERT - ORANGE) + 1)); 
+            bonbon.bonus = 1;
+            tableauBonbon[0][j] = bonbon;             
+          }
+          count_1++;
+          count_2++;
+        } while (i - count_1 >= -1);
+      }
+    }
+  }
+}
+
 void match(int pos_x1, int pos_y1, int pos_x2, int pos_y2) {
   if (isNearToBonbon(pos_x1,pos_y1,pos_x2,pos_y2)) {
     if (isMatchPossible(pos_x1,pos_y1,pos_x2,pos_y2,tableauBonbon[pos_y1][pos_x1].couleur,'o')) {
@@ -288,7 +311,8 @@ void match(int pos_x1, int pos_y1, int pos_x2, int pos_y2) {
     else if (isMatchPossible(pos_x1,pos_y1,pos_x2,pos_y2,tableauBonbon[pos_y1][pos_x1].couleur,'b')) {
       swap(pos_x1,pos_y1,pos_x2,pos_y2);
       destruction(pos_x2,pos_y2,tableauBonbon[pos_y2][pos_x2].couleur,'b');
-    }  
+    }
+    remplacementVide();
   }
 }
 
@@ -396,7 +420,7 @@ int main() {
           if(isClique) {
             clique_x2 = (int) event.mouseButton.x;
             clique_y2 = (int) event.mouseButton.y;
-            std::cout << "x2: " << posReel2posTableau(clique_x2,'x') << ", y2: " << posReel2posTableau(clique_y2,'y') << '\n';
+            //std::cout << "x2: " << posReel2posTableau(clique_x2,'x') << ", y2: " << posReel2posTableau(clique_y2,'y') << '\n';
             match(posReel2posTableau(clique_x,'x'),posReel2posTableau(clique_y,'y'),posReel2posTableau(clique_x2,'x'),posReel2posTableau(clique_y2,'y'));
             isClique = false;
           }
@@ -405,7 +429,7 @@ int main() {
             isClique = true;
             clique_x = (int) event.mouseButton.x;
             clique_y = (int) event.mouseButton.y;
-            std::cout << "x1: " << posReel2posTableau(clique_x,'x') << ", y1: " << posReel2posTableau(clique_y,'y') << '\n';
+            //std::cout << "x1: " << posReel2posTableau(clique_x,'x') << ", y1: " << posReel2posTableau(clique_y,'y') << '\n';
           }
         }
 
