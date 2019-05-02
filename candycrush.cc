@@ -87,6 +87,7 @@ const int VIOLET = 6;
 const int VERT = 7;
 
 Bonbon tableauBonbon[WIDTH][HEIGHT];
+Tuple tableauCoord [WIDTH][HEIGHT];
 
 bool jouer = false;
 bool isClique = false;
@@ -94,6 +95,7 @@ bool isClique = false;
 int combo = 1;
 int nombreCoup = 0;
 int score = 0;
+int conteurAffichage = 1;
 
 //Position du bonbon 1 en taille réel
 int clique_x = 0, clique_y = 0;
@@ -110,6 +112,37 @@ int clique_x2 = 0, clique_y2 = 0;
 /*DECLARATION FONCTION*/
 
 //Fonctions Mineurs
+
+void affichageTabCLI(){
+    for(int i = 0; i < 10; i++){
+        for(int j = 0; j < 10; j++){
+            char charBonbon = ' ';
+            
+            if(tableauBonbon[i][j].couleur == 3){
+                charBonbon = 'O';
+            }
+            else if(tableauBonbon[i][j].couleur == 4){
+                charBonbon = 'R';
+            }
+            else if(tableauBonbon[i][j].couleur == 5){
+                charBonbon = 'B';
+            }
+            else if(tableauBonbon[i][j].couleur == 6){
+                charBonbon = 'P';
+            }  
+            else if(tableauBonbon[i][j].couleur == 7){
+                charBonbon = 'V';
+            }
+            else{
+                charBonbon = '.';
+            }
+            std::cout << charBonbon << ' ';
+        }
+        std::cout << '\n';
+    }
+    std::cout << '\n';
+}
+
 bool verificationClique(Event event, int x, int y, float width, float height) {
   return event.mouseButton.x > x && event.mouseButton.x < x + width & event.mouseButton.y > y && event.mouseButton.y < y + height;
 }
@@ -276,6 +309,7 @@ void swap(int pos_x1, int pos_y1, int pos_x2, int pos_y2) {
   Bonbon swap = tableauBonbon[pos_y1][pos_x1];
   tableauBonbon[pos_y1][pos_x1] = tableauBonbon[pos_y2][pos_x2];
   tableauBonbon[pos_y2][pos_x2] = swap;
+
 }
 
 void remplacementVide() {
@@ -295,10 +329,13 @@ void remplacementVide() {
           }
           count_1++;
           count_2++;
+          affichageTabCLI();
         } while (i - count_1 >= -1);
       }
     }
   }
+  std::cout << "--------------------------------------------------------------- " << conteurAffichage << "\n";
+  conteurAffichage++;
 }
 
 bool verificationLopops(){
@@ -520,16 +557,21 @@ int main() {
   Clock clock;
   
   /*INITIALISATION DU TABLEAU*/
-  
   for(int i = 0; i < 10; i++) {
     for(int j = 0; j < 10; j++) {
       Bonbon bonbon;
       bonbon.couleur = ORANGE + (int)(Math::random() * ((VERT - ORANGE) + 1)); 
       bonbon.bonus = 1;
-      tableauBonbon[i][j] = bonbon; 
+      tableauBonbon[i][j] = bonbon;
+      Tuple coord;
+      coord.x = OFFSET_X + (TAILLE_BONBON*j);
+      coord.y = OFFSET_Y + (TAILLE_BONBON*i);
+      tableauCoord[i][j] = coord;
     }
   }
-
+  do{
+    verificationTableau();
+  }while(verificationLopops());
   
   /*FIN INITIALISATION TABLEAU*/
   
