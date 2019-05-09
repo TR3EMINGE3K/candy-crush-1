@@ -692,15 +692,15 @@ int main() {
         }
           if(event.type == Event::KeyPressed){
           if(event.key.code == Keyboard::S){
-            if (!orange.loadFromFile("orange1.png")){
+            if (!orange.loadFromFile("orange2.png")){
             }
-            if (!rouge.loadFromFile("rouge1.png")){
+            if (!rouge.loadFromFile("rouge2.png")){
             }
-            if (!bleu.loadFromFile("bleu1.png")){
+            if (!bleu.loadFromFile("bleu2.png")){
             }
-            if (!vert.loadFromFile("vert1.png")){
+            if (!vert.loadFromFile("vert2.png")){
             }
-            if (!violet.loadFromFile("violet1.png")){
+            if (!violet.loadFromFile("violet2.png")){
             }
           }
         }
